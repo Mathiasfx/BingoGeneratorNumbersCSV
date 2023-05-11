@@ -1,8 +1,11 @@
-// Generar 1500 combinaciones de números y X para el bingo sin repetir
+// Generar 4500 combinaciones de números y X para el bingo sin repetir
 let bingoCombinations = [];
 let numbers = Array.from(Array(100), (_, i) => (i < 10 ? `0${i}` : i)); // arreglo de números del 00 al 99
+//#region  nueva variable
+let counter = 1; // contador para el número de serie
+//#endregion
 
-for (let i = 0; i < 1500; i++) {
+for (let i = 0; i < 4500; i++) {
   let shuffledNumbers = shuffle(numbers.slice()); // hacer una copia del arreglo y mezclarlo aleatoriamente
   // let combination = shuffledNumbers.slice(0, 45);
   let combination = shuffledNumbers.slice(0, 15); // tomar los primeros 15 números del arreglo mezclado
@@ -16,9 +19,22 @@ for (let i = 0; i < 1500; i++) {
     let colIndex = xIndices[j] % 9;
     combination.splice(rowIndex * 9 + colIndex, 0, "XX"); // insertar una X en cada índice aleatorio generado
   }
-  let counter = (i + 1).toString().padStart(4, "0"); // número de serie con 4 dígitos y ceros a la izquierda
-  combination.push(counter); // agregar el número de serie a la última columna
+
+  let counterString = counter.toString().padStart(4, "0"); // número de serie con 4 dígitos y ceros a la izquierda
+
+  if ((i + 1) % 3 === 0) {
+    // si el índice actual es divisible por 3
+    combination.push(counterString); // agregar el número de serie a la última columna
+    counter++;
+
+    // combination.push(counter); // agregar el número de serie a la última columna
+  }
   bingoCombinations.push(combination);
+  //#region numeracion anterior
+  //let counter = (i + 1).toString().padStart(4, "0"); // número de serie con 4 dígitos y ceros a la izquierda
+  // combination.push(counter); // agregar el número de serie a la última columna
+  //bingoCombinations.push(combination);
+  //#endregion
 }
 
 function shuffle(array) {
@@ -75,4 +91,5 @@ const fs = require("fs");
 fs.writeFile("bingoOk.csv", csv, (err) => {
   if (err) throw err;
   console.log("Archivo guardado exitosamente");
+  console.log("Cantidad de combinaciones: " + bingoCombinations.length);
 });
