@@ -1,4 +1,4 @@
-const fechaString = "29/08/2025";
+const fechaString = "30/12/2025";
 const partesFecha = fechaString.split("/"); // Dividir la cadena en partes
 
 // Crear un objeto Date utilizando el formato ISO (YYYY-MM-DD) que es más confiable

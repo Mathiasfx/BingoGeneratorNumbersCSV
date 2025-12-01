@@ -1,39 +1,31 @@
-// Generar 500 combinaciones de números y X para el bingo sin repetir
-let bingoCombinations = [];
-let numbers = Array.from(Array(90), (_, i) => (i < 9 ? `0${i + 1}` : i + 1)); // arreglo de números del 00 al 99
-//#region  nueva variable
-let counter = 0; // contador para el número de serie
-//#endregion
+// Generar 500 combinaciones de números para el bingo con formato XX
+const TOTAL_COMBINATIONS = 500;
+const NUMBERS = Array.from({ length: 90 }, (_, i) =>
+  i < 9 ? `0${i + 1}` : `${i + 1}`
+);
+const bingoCombinations = [];
 
-for (let i = 0; i < 3020; i++) {
-  let shuffledNumbers = shuffle(numbers.slice()); // hacer una copia del arreglo y mezclarlo aleatoriamente
-  // let combination = shuffledNumbers.slice(0, 45);
-  let combination = shuffledNumbers.slice(0, 15); // tomar los primeros 15 números del arreglo mezclado
-  combination.sort((a, b) => a - b); // ordenar los números de forma ascendente
-  let xIndices = getRandomIndices(12, 27); // generar 12 índices aleatorios para insertar las X
+for (let comboIndex = 0; comboIndex < TOTAL_COMBINATIONS; comboIndex++) {
+  // Generar combinación única
+  const combination = shuffle([...NUMBERS])
+    .slice(0, 15)
+    .sort((a, b) => a - b);
 
-  // let xIndices = getRandomIndices(12, 27); // generar 12 índices aleatorios para insertar las X
-  //CAMBIE 9 POR 27
-  for (let j = 0; j < xIndices.length; j++) {
-    let rowIndex = Math.floor(xIndices[j] / 9);
-    let colIndex = xIndices[j] % 9;
-    combination.splice(rowIndex * 9 + colIndex, 0, "XX"); // insertar una X en cada índice aleatorio generado
+  // Insertar 12 marcadores XX en posiciones aleatorias únicas
+  const xPositions = new Set();
+  while (xPositions.size < 12) {
+    xPositions.add(Math.floor(Math.random() * 27));
   }
 
-  let counterString = counter.toString().padStart(4, "0"); // número de serie con 4 dígitos y ceros a la izquierda
+  Array.from(xPositions)
+    .sort((a, b) => b - a) // Orden descendente para insertar sin afectar índices
+    .forEach((pos) => {
+      combination.splice(pos, 0, "XX");
+    });
 
-  if ((i + 1) % 3 === 0) {
-    combination.push(counterString); // agregar el número de serie a la última columna
-    counter++;
-
-    //combination.push(counter); // agregar el número de serie a la última columna
-  }
+  // Agregar número de serie con formato 0000
+  combination.push(comboIndex.toString().padStart(4, "0"));
   bingoCombinations.push(combination);
-  //#region numeracion anterior
-  //let counter = (i + 1).toString().padStart(4, "0"); // número de serie con 4 dígitos y ceros a la izquierda
-  // combination.push(counter); // agregar el número de serie a la última columna
-  //bingoCombinations.push(combination);
-  //#endregion
 }
 
 function shuffle(array) {
@@ -45,38 +37,13 @@ function shuffle(array) {
   return array;
 }
 
-function getRandomIndices(numIndices, maxIndex) {
-  let indices = new Set();
-  let indicesPerSection = Math.floor(numIndices / 3); // cantidad de índices por sección
-
-  // Generar índices aleatorios para cada sección
-  for (let section = 0; section < 3; section++) {
-    let startIndex = section * 9; // índice inicial de la sección
-    let endIndex = (section + 1) * 9; // índice final de la sección
-    while (indices.size < (section + 1) * indicesPerSection) {
-      let index =
-        Math.floor(Math.random() * (endIndex - startIndex)) + startIndex;
-      indices.add(index);
-    }
+function shuffle(array) {
+  // Algoritmo Fisher-Yates moderno
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
-
-  // Generar índices aleatorios adicionales si numIndices no es divisible por 3
-  if (numIndices % 3 !== 0) {
-    let extraIndices = numIndices % 3;
-    let startIndex = 0;
-    let endIndex = 27;
-    while (indices.size < numIndices) {
-      let index =
-        Math.floor(Math.random() * (endIndex - startIndex)) + startIndex;
-      if (!indices.has(index)) {
-        indices.add(index);
-        extraIndices--;
-        if (extraIndices === 0) break;
-      }
-    }
-  }
-
-  return Array.from(indices).sort((a, b) => a - b);
+  return array;
 }
 
 // Convertir la matriz en una cadena de texto en formato CSV
@@ -87,8 +54,13 @@ let csv = bingoCombinations
 const fs = require("fs");
 
 // Guardar la cadena de texto en un archivo CSV
+// Escribir archivo con manejo de errores mejorado
 fs.writeFile("bingoNuevo.csv", csv, (err) => {
-  if (err) throw err;
-  console.log("Archivo guardado exitosamente");
-  console.log("Cantidad de combinaciones: " + bingoCombinations.length);
+  if (err) {
+    console.error("Error al guardar el archivo:", err);
+    process.exit(1);
+  }
+  console.log(
+    `Archivo guardado exitosamente. Combinaciones generadas: ${bingoCombinations.length}`
+  );
 });

@@ -1,4 +1,4 @@
-const timestamp = 1756425600000;
+const timestamp = 1767052800000;
 const fecha = new Date(timestamp);
 console.log("Timestamp:", timestamp);
 console.log("Fecha:", fecha.toISOString());
